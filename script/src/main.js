@@ -171,6 +171,15 @@ try {
                         contentSize: content.byteLength
                     });
                     const result = await window.BassoonTracker.loadModuleBuffer(content, finalFilename);
+                    
+                    // Trigger UI refresh to update display elements after file load
+                    try {
+                        EventBus.trigger(EVENT.screenRefresh);
+                        console.log('[BT API] UI refresh triggered after file load');
+                    } catch(e) {
+                        console.warn('[BT API] UI refresh failed', e);
+                    }
+                    
                     console.log('[BT API] loadFromFileService complete', {filePath, filename, size: content.byteLength});
                     return result;
                     

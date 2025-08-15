@@ -65,12 +65,54 @@ let DiskOperationSave = function(){
 
 	var saveButton = Button();
 	saveButton.setProperties({
-		label: "Export",
+		label: "Save",
 		textAlign:"center",
 		background: Assets.buttonLightScale9,
 		font:window.fontMed
 	});
 	saveButton.onClick = function(){
+		// Save to project functionality
+		if (mainFileType === FILETYPE.module){
+			Editor.saveToProject();
+		}
+		// For other file types, use the same logic as export but target project
+		if (mainFileType === FILETYPE.sample){
+			var sample = Tracker.getCurrentInstrument().sample;
+			if (sample){
+				if (saveAsFileFormat === SAMPLETYPE.RAW_8BIT){
+                    var fileSize = sample.length; // x2 ?
+                    var arrayBuffer = new ArrayBuffer(fileSize);
+                    var file = new BinaryStream(arrayBuffer,true);
+
+                    file.clear(2);
+                    var d;
+                    // sample length is in word
+                    for (let i = 0; i < sample.length-2; i++){
+                        d = sample.data[i] || 0;
+                        file.writeByte(Math.round(d*127));
+                    }
+				}else{
+					file = encodeRIFFsample(sample.data,saveAsFileFormat === SAMPLETYPE.RIFF_16BIT ? 16 : 8);
+				}
+                var b = new Blob([file.buffer], {type: "application/octet-stream"});
+				saveFile(b, fileName, "project");
+                console.log("write sample with " + sample.length + " length");
+			}
+		}
+		if (mainFileType === FILETYPE.playlist){
+			Playlist.export(fileName, saveAsFileFormat, "project");
+		}
+	};
+	me.addChild(saveButton);
+
+	var exportButton = Button();
+	exportButton.setProperties({
+		label: "Export",
+		textAlign:"center",
+		background: Assets.buttonLightScale9,
+		font:window.fontMed
+	});
+	exportButton.onClick = function(){
 		if (mainFileType === FILETYPE.module){
 			if (saveAsFileType === FILETYPE.module){
 				Editor.save(fileName,saveTarget);
@@ -121,7 +163,7 @@ let DiskOperationSave = function(){
 		}
 
 	};
-	me.addChild(saveButton);
+	me.addChild(exportButton);
 
 	var fileNameInput = Inputbox({
 		name: "fileNameInput",
@@ -171,7 +213,14 @@ let DiskOperationSave = function(){
 
         saveButton.setProperties({
             left:2,
-            width: innerWidth,
+            width: Math.floor(innerWidth/2) - 1,
+            height: 28,
+            top: me.height - 27
+        });
+
+        exportButton.setProperties({
+            left: Math.floor(innerWidth/2) + 1,
+            width: Math.floor(innerWidth/2) - 1,
             height: 28,
             top: me.height - 27
         });

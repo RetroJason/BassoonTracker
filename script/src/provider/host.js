@@ -37,10 +37,10 @@ const HostIntegration = {
   },
 
   // File save hook: host can intercept; default saves via anchor download
-  saveFile(blob, filename) {
+  saveFile(blob, filename, target) {
     try {
       if (typeof this._overrides.saveFile === 'function') {
-        const handled = this._overrides.saveFile(blob, filename);
+        const handled = this._overrides.saveFile(blob, filename, target);
         if (handled) return true;
       }
     } catch (_) {}

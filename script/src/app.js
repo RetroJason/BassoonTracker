@@ -41,6 +41,15 @@ var App = (function(){
                     EventBus.trigger(EVENT.showView,"diskop_modules_load");
                     break;
                 case COMMAND.saveFile:
+                    // Changed to save to project instead of opening dialog
+                    Editor.saveToProject();
+                    break;
+                case COMMAND.saveToProject:
+                    // Direct save to project without showing dialog
+                    Editor.saveToProject();
+                    break;
+                case COMMAND.exportFile:
+                    // Show export dialog (original save behavior)
                     EventBus.trigger(EVENT.showView,"diskop_modules_save");
                     break;
                 case COMMAND.clearTrack:

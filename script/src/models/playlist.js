@@ -170,6 +170,22 @@ var Playlist = function(){
         return filename;
     }
 
+    me.getCurrentSongFileName = function(){
+        if (!currentPlaylist || !currentPlaylist.modules || currentIndex < 0 || currentIndex >= currentPlaylist.modules.length) {
+            return null;
+        }
+        let item = currentPlaylist.modules[currentIndex];
+        if (item && item.title) {
+            // Create filename from title, similar to how Tracker.getFileName() works
+            return item.title.replace(/ /g, '-').replace(/\W/g, '') + ".mod";
+        }
+        return null;
+    }
+
+    me.isActive = function(){
+        return playListActive;
+    }
+
     function generatePLS(){
         if (!currentPlaylist || !currentPlaylist.modules) return;
 

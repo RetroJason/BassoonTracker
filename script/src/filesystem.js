@@ -38,8 +38,8 @@ export function loadFile(url,next) {
 	req.send(null);
 }
 
-export function saveFile(b,filename){
-	HostIntegration.saveFile(b, filename);
+export function saveFile(b,filename,target){
+	HostIntegration.saveFile(b, filename, target);
 }
 
 export function safeFileDialog(b,filename){

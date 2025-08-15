@@ -84,6 +84,8 @@ export var COMMAND = {
 	newFile: 1001,
 	openFile: 1002,
 	saveFile: 1003,
+	saveToProject: 1023, // New command for saving to project
+	exportFile: 1024, // New command for export dialog
 	clearTrack : 1004,
 	clearPattern : 1005,
 	clearSong : 1006,

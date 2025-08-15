@@ -515,6 +515,28 @@ var Editor = (function(){
         });
     };
 
+    // New method to save directly to project (used by Save command)
+    me.saveToProject = function(){
+        UI.setStatus("Saving to project...", true);
+        me.buildBinary(Tracker.inFTMode() ? MODULETYPE.xm : MODULETYPE.mod, function(file){
+            var b = new Blob([file.buffer], {type: "application/octet-stream"});
+            
+            // Try to get filename from playlist first (if active), then fallback to tracker
+            var fileName = null;
+            if (Playlist && Playlist.isActive && Playlist.isActive()) {
+                fileName = Playlist.getCurrentSongFileName();
+            }
+            if (!fileName) {
+                fileName = Tracker.getFileName();
+            }
+            
+            // Use special target to indicate this is a project save
+            Logger.info("save to project " + fileName);
+            saveFile(b, fileName, "project");
+            UI.setStatus("");
+        });
+    };
+
     me.importSample = function(file,name){
         console.log("Reading instrument " + name + " with length of " + file.length + " bytes to index " + Tracker.getCurrentInstrumentIndex());
 
