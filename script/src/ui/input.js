@@ -6,6 +6,7 @@ import Tracker, {FTNotes} from "../tracker.js";
 import Audio from "../audio.js";
 import Editor from "../editor.js";
 import Playlist from "../models/playlist.js";
+import HostIntegration from "../provider/host.js";
 
 let Input = (function(){
 
@@ -581,12 +582,13 @@ let Input = (function(){
 		}
 
 
-		function handleResize(){
+	function handleResize(){
 			if (!App.isPlugin) {
 				// throttle resize events - resizing is expensive as all the canvas cache needs to be regenerated
 				clearTimeout(resizeTimer);
 				resizeTimer = setTimeout(function () {
-					UI.setSize(window.innerWidth, window.innerHeight)
+		    var vp = HostIntegration.getViewportSize();
+		    UI.setSize(vp.width, vp.height)
 				}, 100);
 			}
 		}

@@ -1,5 +1,6 @@
 import Editor from "./editor.js";
 import BassoonProvider from "./provider/bassoon.js";
+import HostIntegration from "./provider/host.js";
 import Favorites from "./models/favorites.js";
 
 export function loadFile(url,next) {
@@ -38,16 +39,7 @@ export function loadFile(url,next) {
 }
 
 export function saveFile(b,filename){
-	//<!--
-    var a = document.createElement("a");
-    document.body.appendChild(a);
-    a.style = "display: none";
-    let url = window.URL.createObjectURL(b);
-    a.href = url;
-    a.download = filename;
-    a.click();
-    window.URL.revokeObjectURL(url);
-	//-->
+	HostIntegration.saveFile(b, filename);
 }
 
 export function safeFileDialog(b,filename){

@@ -27,8 +27,16 @@ var Host = function(){
 			if (typeof hostBridge.useDropbox === "boolean") me.useDropbox = hostBridge.useDropboxs;
 			if (typeof hostBridge.showInternalMenu === "boolean") me.showInternalMenu = hostBridge.showInternalMenu;
 			if (typeof hostBridge.useWebWorkers === "boolean") me.useWebWorkers = hostBridge.useWebWorkers;
+			if (typeof hostBridge.useInitialLoad === "boolean") me.useInitialLoad = hostBridge.useInitialLoad;
 	    }
+		// URL param skipDemo=1 forces disabling initial load
+		try {
+			const usp = new URLSearchParams(window.location.search);
+			if (usp.get('skipDemo') === '1') me.useInitialLoad = false;
+		} catch(_){ }
 	};
+
+	me.disableInitialLoad = function(){ me.useInitialLoad = false; };
 	
 	me.getBaseUrl = function(){
 		if (hostBridge && hostBridge.getBaseUrl){

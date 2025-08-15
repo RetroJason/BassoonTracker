@@ -14,6 +14,7 @@ import Audio from "../audio.js";
 import Logger from "../log.js";
 import ToolTip from "./components/tooltip.js";
 import FetchService from "../fetchService.js";
+import HostIntegration from "../provider/host.js";
 
 var UI = (function(){
 
@@ -93,8 +94,9 @@ var UI = (function(){
 		ctx.imageSmoothingEnabled = false;
 		ctx.alpha = false;
 		
-		var w = window.innerWidth;
-		var h = window.innerHeight;
+	var vp = HostIntegration.getViewportSize();
+	var w = vp.width;
+	var h = vp.height;
 
 		if (w>maxWidth) w=maxWidth;
 		if (h>maxHeight) h=maxHeight;
@@ -160,7 +162,7 @@ var UI = (function(){
 			canvas = config.canvas;
 		}else{
 			canvas = document.getElementById("canvas");
-			var w = window.innerWidth;
+			var w = HostIntegration.getViewportSize().width;
 
 			if (w>maxWidth) w=maxWidth;
 			if (w>maxHeight) w=maxHeight;
@@ -192,10 +194,12 @@ var UI = (function(){
 
 
 	me.setSize = function(newWidth,newHeight){
-		if (newWidth>Layout.maxWidth) newWidth = Layout.maxWidth;
-		if (newWidth>window.innerWidth) newWidth = window.innerWidth;
-		if (newHeight>Layout.maxHeight) newHeight = Layout.maxHeight;
-		if (newHeight>window.innerHeight) newHeight = window.innerHeight;
+	if (newWidth>Layout.maxWidth) newWidth = Layout.maxWidth;
+	var vw = HostIntegration.getViewportSize().width;
+	var vh = HostIntegration.getViewportSize().height;
+	if (newWidth>vw) newWidth = vw;
+	if (newHeight>Layout.maxHeight) newHeight = Layout.maxHeight;
+	if (newHeight>vh) newHeight = vh;
 		if (newHeight<Layout.minHeight) newHeight = Layout.minHeight;
 
 

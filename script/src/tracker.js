@@ -2211,9 +2211,15 @@ var Tracker = (function(){
 		return song.url;
 	}
 
+	// External helper so host/editor can check if a module is already present
+	me.hasSong = function(){
+		return !!song && !!song.patterns && song.patterns.length>0;
+	};
+
 
 	function onModuleLoad(){
 		if (UI) UI.setInfo(song.title);
+		me._songLoaded = true; // internal flag for host integrations
 
 		if (song.channels) me.setTrackCount(song.channels);
 
