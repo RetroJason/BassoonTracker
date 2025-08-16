@@ -173,12 +173,20 @@ try {
                     const result = await window.BassoonTracker.loadModuleBuffer(content, finalFilename);
                     
                     // Trigger UI refresh to update display elements after file load
-                    try {
-                        EventBus.trigger(EVENT.screenRefresh);
-                        console.log('[BT API] UI refresh triggered after file load');
-                    } catch(e) {
-                        console.warn('[BT API] UI refresh failed', e);
-                    }
+                    // Use a small delay to ensure the module is fully processed
+                    setTimeout(() => {
+                        try {
+                            // Try to refresh the tracker info specifically instead of full screen refresh
+                            if (window.BassoonTracker && window.BassoonTracker.refreshUI) {
+                                window.BassoonTracker.refreshUI();
+                            } else if (typeof EventBus !== 'undefined' && EVENT && EVENT.screenRefresh) {
+                                EventBus.trigger(EVENT.screenRefresh);
+                            }
+                            console.log('[BT API] UI refresh triggered after file load');
+                        } catch(e) {
+                            console.warn('[BT API] UI refresh failed', e);
+                        }
+                    }, 100);
                     
                     console.log('[BT API] loadFromFileService complete', {filePath, filename, size: content.byteLength});
                     return result;
