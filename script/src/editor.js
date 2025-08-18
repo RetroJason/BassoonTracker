@@ -486,34 +486,51 @@ var Editor = (function(){
 		});
 	};
 
-    me.save = function(filename,target){
-        UI.setStatus("Exporting ...",true);
-        me.buildBinary(Tracker.inFTMode() ? MODULETYPE.xm : MODULETYPE.mod,function(file){
+    me.save = function(filename, target) {
+        // If target is a function, this is a callback-based save (RetroTrackerSave or external)
+        if (typeof target === "function") {
+            UI.setStatus("Exporting ...", true);
+            me.buildBinary(Tracker.inFTMode() ? MODULETYPE.xm : MODULETYPE.mod, function(file) {
+                var b = new Blob([file.buffer], {type: "application/octet-stream"});
+                try { 
+                    target(b); 
+                } finally { 
+                    try { UI.setStatus(""); } catch(_) { } 
+                }
+            });
+            return;
+        }
+        
+        // Otherwise, this is UI save - restore original behavior
+        UI.setStatus("Exporting ...", true);
+        me.buildBinary(Tracker.inFTMode() ? MODULETYPE.xm : MODULETYPE.mod, function(file) {
             var b = new Blob([file.buffer], {type: "application/octet-stream"});
-
             var fileName = filename || Tracker.getFileName();
             
-            if (typeof target === "function"){
-            	target(b);
-            	return;
-			}
-
-            if (target === "dropbox"){
+            if (target === "dropbox") {
                 Logger.info("save to dropbox " + fileName);
-                Dropbox.putFile("/" + fileName,b,function(success){
-                    if (success){
+                Dropbox.putFile("/" + fileName, b, function(success) {
+                    if (success) {
                         UI.setStatus("");
-                    }else{
+                    } else {
                         UI.setStatus("Error while saving to Dropbox ...");
                     }
                 });
-            }else{
+            } else {
                 Logger.info("save " + fileName);
-                saveFile(b,fileName);
+                saveFile(b, fileName);
                 UI.setStatus("");
             }
         });
     };
+
+    // Stable deterministic save callback used by host integration (no fallbacks)
+    if (!window.RetroTrackerSave){
+    	window.RetroTrackerSave = function(cb){
+    		// Use the exact same internal path as menu: me.save with callback
+    		me.save(null,function(blob){ if (cb) cb(blob); });
+    	};
+    }
 
     // New method to save directly to project (used by Save command)
     me.saveToProject = function(){
