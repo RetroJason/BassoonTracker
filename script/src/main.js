@@ -161,113 +161,32 @@ try {
                         throw new Error('Invalid file content or empty file');
                     }
                     
-                    // Use the existing processFile method with proper URL for UI refresh
+                    // Use the existing loadModuleBuffer method
                     const finalFilename = filename || fileRecord.filename || 'module.mod';
-                    console.log('[BT API] calling Tracker.processFile directly for better UI refresh', {
+                    console.log('[BT API] calling loadModuleBuffer', {
                         filePath, 
                         providedFilename: filename,
                         fileRecordFilename: fileRecord.filename,
                         finalFilename,
                         contentSize: content.byteLength
                     });
+                    const result = await window.BassoonTracker.loadModuleBuffer(content, finalFilename);
                     
-                    try {
-                        // Instead of using processFile directly, create a blob URL and use normal Tracker.load
-                        // This ensures we get all the normal callback behavior including demo loading
-                        const blob = new Blob([content], {type: 'application/octet-stream'});
-                        const tempUrl = URL.createObjectURL(blob) + (finalFilename ? ('#' + encodeURIComponent(finalFilename)) : '');
-                        
-                        console.log('[BT API] Created temporary blob URL for normal Tracker.load flow', {
-                            filePath, 
-                            finalFilename,
-                            tempUrl,
-                            contentSize: content.byteLength
-                        });
-                        
-                        // Use the normal Tracker.load which includes all callback logic
-                        const result = await new Promise((resolve, reject) => {
-                            Tracker.load(tempUrl, true, (fileType) => {
-                                console.log('[BT API] Normal Tracker.load complete', {filename: finalFilename, fileType});
-                                console.log('[BT API] FILETYPE debug', {
-                                    fileType, 
-                                    windowFILETYPE: typeof window.FILETYPE !== 'undefined' ? window.FILETYPE : 'undefined',
-                                    moduleValue: typeof window.FILETYPE !== 'undefined' ? window.FILETYPE.module : 'undefined'
-                                });
-                                
-                                // Manually trigger demo loading if this was a module (check multiple possible values)
-                                // Module files typically have fileType = 1
-                                const isModule = fileType === 1 || (typeof window.FILETYPE !== 'undefined' && fileType === window.FILETYPE.module);
-                                if (fileType && isModule) {
-                                    console.log('[BT API] Module loaded via loadFromFileService, triggering demo list load');
-                                    try {
-                                        // Try multiple ways to access Host and Tracker
-                                        let Host = window.Host;
-                                        let TrackerModule = window.Tracker;
-                                        
-                                        // Fallback to global references that might be available
-                                        if (!TrackerModule && typeof Tracker !== 'undefined') TrackerModule = Tracker;
-                                        
-                                        console.log('[BT API] Module access debug', {
-                                            windowHost: !!window.Host,
-                                            windowTracker: !!window.Tracker,
-                                            globalTrackerCap: typeof Tracker !== 'undefined',
-                                            finalHost: !!Host,
-                                            finalTracker: !!TrackerModule
-                                        });
-                                        
-                                        if (TrackerModule && typeof TrackerModule.load === 'function') {
-                                            // Build demo URL using current location since Host might not be available
-                                            let demoUrl;
-                                            if (Host && typeof Host.getRemoteUrl === 'function') {
-                                                demoUrl = Host.getRemoteUrl() + 'playlists/demosongs.json';
-                                                console.log('[BT API] Using Host.getRemoteUrl for demo loading:', demoUrl);
-                                            } else {
-                                                // Fallback: construct URL from current location
-                                                const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/');
-                                                demoUrl = baseUrl + 'playlists/demosongs.json';
-                                                console.log('[BT API] Using fallback URL construction for demo loading:', demoUrl);
-                                            }
-                                            
-                                            console.log('[BT API] Loading demo playlist from', demoUrl);
-                                            TrackerModule.load(demoUrl, true, null, false, true);
-                                        } else {
-                                            console.warn('[BT API] Could not access Tracker for demo loading', {Host: !!Host, TrackerModule: !!TrackerModule, loadMethod: TrackerModule && typeof TrackerModule.load});
-                                        }
-                                    } catch(demoError) {
-                                        console.warn('[BT API] Demo list loading failed', demoError);
-                                        // Don't fail the main load if demo loading fails
-                                    }
-                                } else {
-                                    console.log('[BT API] File was not detected as module, skipping demo load', {fileType, isModule});
-                                }
-                                
-                                // Clean up the blob URL
-                                try {
-                                    URL.revokeObjectURL(tempUrl);
-                                } catch(e) {
-                                    console.warn('[BT API] Failed to revoke blob URL', e);
-                                }
-                                
-                                resolve(fileType !== undefined);
-                            }, false, false); // not initial, not silent
-                        });
-                        
-                        return result;
-                    } catch(e) {
-                        console.error('[BT API] Blob URL approach failed, falling back to processFile', e);
-                        
-                        // Fallback to direct processFile approach
-                        const result = await new Promise((resolve, reject) => {
-                            Tracker.processFile(content, finalFilename, filePath).then(fileType => {
-                                console.log('[BT API] Fallback processFile complete', {filename: finalFilename, fileType});
-                                resolve(fileType !== undefined);
-                            }).catch(e => {
-                                console.error('[BT API] Fallback processFile failed', e);
-                                resolve(false);
-                            });
-                        });
-                        return result;
-                    }
+                    // Trigger UI refresh to update display elements after file load
+                    // Use a small delay to ensure the module is fully processed
+                    setTimeout(() => {
+                        try {
+                            // Try to refresh the tracker info specifically instead of full screen refresh
+                            if (window.BassoonTracker && window.BassoonTracker.refreshUI) {
+                                window.BassoonTracker.refreshUI();
+                            } else if (typeof EventBus !== 'undefined' && EVENT && EVENT.screenRefresh) {
+                                EventBus.trigger(EVENT.screenRefresh);
+                            }
+                            console.log('[BT API] UI refresh triggered after file load');
+                        } catch(e) {
+                            console.warn('[BT API] UI refresh failed', e);
+                        }
+                    }, 100);
                     
                     console.log('[BT API] loadFromFileService complete', {filePath, filename, size: content.byteLength});
                     return result;

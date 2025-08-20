@@ -34,7 +34,8 @@ let app_menu = function(container){
         {label: "File" , subItems: [
                 {label: "New" , "command" : COMMAND.newFile},
                 {label: "Load File" , "command" : COMMAND.openFile},
-                {label: "Export" , "command" : COMMAND.saveFile},
+                {label: "Save File" , "command" : COMMAND.saveFile},
+                {label: "Export" , "command" : COMMAND.exportFile},
                 {label: "Open Random MOD Song" , "command" : COMMAND.randomSong},
                 {label: "Open Random XM Song" , "command" : COMMAND.randomSongXM},
                 {label: "Open Random Playlist" , "command" : COMMAND.randomPlayList},
